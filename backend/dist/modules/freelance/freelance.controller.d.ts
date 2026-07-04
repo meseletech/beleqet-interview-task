@@ -27,10 +27,10 @@ export declare class FreelanceController {
             updatedAt: Date;
             skills: string[];
             categoryId: string;
+            currency: string;
+            status: import(".prisma/client").$Enums.FreelanceJobStatus;
             featured: boolean;
             experienceLevel: string | null;
-            status: import(".prisma/client").$Enums.FreelanceJobStatus;
-            currency: string;
             attachments: string[];
             budgetMin: number;
             budgetMax: number;
@@ -82,10 +82,10 @@ export declare class FreelanceController {
         updatedAt: Date;
         skills: string[];
         categoryId: string;
+        currency: string;
+        status: import(".prisma/client").$Enums.FreelanceJobStatus;
         featured: boolean;
         experienceLevel: string | null;
-        status: import(".prisma/client").$Enums.FreelanceJobStatus;
-        currency: string;
         attachments: string[];
         budgetMin: number;
         budgetMax: number;
@@ -114,10 +114,10 @@ export declare class FreelanceController {
         updatedAt: Date;
         skills: string[];
         categoryId: string;
+        currency: string;
+        status: import(".prisma/client").$Enums.FreelanceJobStatus;
         featured: boolean;
         experienceLevel: string | null;
-        status: import(".prisma/client").$Enums.FreelanceJobStatus;
-        currency: string;
         attachments: string[];
         budgetMin: number;
         budgetMax: number;
@@ -141,8 +141,8 @@ export declare class FreelanceController {
     acceptBid(id: string, u: CurrentUserPayload): Promise<{
         id: string;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.ContractStatus;
         currency: string;
+        status: import(".prisma/client").$Enums.ContractStatus;
         clientId: string;
         freelanceJobId: string;
         freelancerId: string;
@@ -166,10 +166,10 @@ export declare class FreelanceController {
             updatedAt: Date;
             skills: string[];
             categoryId: string;
+            currency: string;
+            status: import(".prisma/client").$Enums.FreelanceJobStatus;
             featured: boolean;
             experienceLevel: string | null;
-            status: import(".prisma/client").$Enums.FreelanceJobStatus;
-            currency: string;
             attachments: string[];
             budgetMin: number;
             budgetMax: number;
@@ -199,10 +199,10 @@ export declare class FreelanceController {
             updatedAt: Date;
             skills: string[];
             categoryId: string;
+            currency: string;
+            status: import(".prisma/client").$Enums.FreelanceJobStatus;
             featured: boolean;
             experienceLevel: string | null;
-            status: import(".prisma/client").$Enums.FreelanceJobStatus;
-            currency: string;
             attachments: string[];
             budgetMin: number;
             budgetMax: number;
@@ -244,8 +244,8 @@ export declare class FreelanceController {
     } & {
         id: string;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.ContractStatus;
         currency: string;
+        status: import(".prisma/client").$Enums.ContractStatus;
         clientId: string;
         freelanceJobId: string;
         freelancerId: string;

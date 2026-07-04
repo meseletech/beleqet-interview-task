@@ -7,9 +7,45 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
+function isLocalDatabaseUrl(url?: string): boolean {
+  if (!url) return false;
+  return /@(?:localhost|127\.0\.0\.1)(?::\d+)?\//i.test(url);
+}
+
+function normalizeProductionDatabaseUrl(): void {
+  if ((process.env.NODE_ENV ?? 'development') !== 'production') {
+    return;
+  }
+
+  const currentUrl = process.env.DATABASE_URL?.trim();
+  const fallbackKeys = ['DATABASE_INTERNAL_URL', 'POSTGRES_INTERNAL_URL', 'POSTGRES_URL'];
+
+  if (!currentUrl || isLocalDatabaseUrl(currentUrl)) {
+    const replacementKey = fallbackKeys.find((key) => {
+      const value = process.env[key]?.trim();
+      return Boolean(value && !isLocalDatabaseUrl(value));
+    });
+
+    if (replacementKey) {
+      process.env.DATABASE_URL = process.env[replacementKey];
+      // eslint-disable-next-line no-console
+      console.log(`[Bootstrap] Using ${replacementKey} as DATABASE_URL in production.`);
+      return;
+    }
+
+    // eslint-disable-next-line no-console
+    console.error(
+      '[Bootstrap] DATABASE_URL is missing or points to localhost in production. ' +
+      'Set a non-local PostgreSQL connection string in Render environment variables.',
+    );
+  }
+}
+
 async function bootstrap() {
+  normalizeProductionDatabaseUrl();
+
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule, { bufferLogs: true, rawBody: true });
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT', 4000);
@@ -80,6 +116,11 @@ async function bootstrap() {
 
 bootstrap().catch((err) => {
   const logger = new Logger('Bootstrap');
-  logger.error('Fatal startup error', err);
+  const message = err instanceof Error ? err.message : String(err);
+  const stack = err instanceof Error ? err.stack : undefined;
+  logger.error(`Fatal startup error: ${message}`, stack);
+  // Fallback log for environments where Nest logger output is buffered or suppressed.
+  // eslint-disable-next-line no-console
+  console.error('Fatal startup error details:', err);
   process.exit(1);
 });

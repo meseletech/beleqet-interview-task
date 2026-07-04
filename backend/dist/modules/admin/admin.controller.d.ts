@@ -46,10 +46,10 @@ export declare class AdminController {
                 updatedAt: Date;
                 skills: string[];
                 categoryId: string;
+                currency: string;
+                status: import(".prisma/client").$Enums.FreelanceJobStatus;
                 featured: boolean;
                 experienceLevel: string | null;
-                status: import(".prisma/client").$Enums.FreelanceJobStatus;
-                currency: string;
                 attachments: string[];
                 budgetMin: number;
                 budgetMax: number;
@@ -107,8 +107,8 @@ export declare class AdminController {
         } & {
             id: string;
             updatedAt: Date;
-            status: import(".prisma/client").$Enums.ContractStatus;
             currency: string;
+            status: import(".prisma/client").$Enums.ContractStatus;
             clientId: string;
             freelanceJobId: string;
             freelancerId: string;

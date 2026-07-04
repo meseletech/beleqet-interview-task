@@ -8,9 +8,35 @@ const helmet_1 = require("helmet");
 const app_module_1 = require("./app.module");
 const http_exception_filter_1 = require("./common/filters/http-exception.filter");
 const logging_interceptor_1 = require("./common/interceptors/logging.interceptor");
+function isLocalDatabaseUrl(url) {
+    if (!url)
+        return false;
+    return /@(?:localhost|127\.0\.0\.1)(?::\d+)?\//i.test(url);
+}
+function normalizeProductionDatabaseUrl() {
+    if ((process.env.NODE_ENV ?? 'development') !== 'production') {
+        return;
+    }
+    const currentUrl = process.env.DATABASE_URL?.trim();
+    const fallbackKeys = ['DATABASE_INTERNAL_URL', 'POSTGRES_INTERNAL_URL', 'POSTGRES_URL'];
+    if (!currentUrl || isLocalDatabaseUrl(currentUrl)) {
+        const replacementKey = fallbackKeys.find((key) => {
+            const value = process.env[key]?.trim();
+            return Boolean(value && !isLocalDatabaseUrl(value));
+        });
+        if (replacementKey) {
+            process.env.DATABASE_URL = process.env[replacementKey];
+            console.log(`[Bootstrap] Using ${replacementKey} as DATABASE_URL in production.`);
+            return;
+        }
+        console.error('[Bootstrap] DATABASE_URL is missing or points to localhost in production. ' +
+            'Set a non-local PostgreSQL connection string in Render environment variables.');
+    }
+}
 async function bootstrap() {
+    normalizeProductionDatabaseUrl();
     const logger = new common_1.Logger('Bootstrap');
-    const app = await core_1.NestFactory.create(app_module_1.AppModule, { bufferLogs: true, rawBody: true });
+    const app = await core_1.NestFactory.create(app_module_1.AppModule, { rawBody: true });
     const configService = app.get(config_1.ConfigService);
     const port = configService.get('PORT', 4000);
     const nodeEnv = configService.get('NODE_ENV', 'development');
@@ -57,7 +83,10 @@ async function bootstrap() {
 }
 bootstrap().catch((err) => {
     const logger = new common_1.Logger('Bootstrap');
-    logger.error('Fatal startup error', err);
+    const message = err instanceof Error ? err.message : String(err);
+    const stack = err instanceof Error ? err.stack : undefined;
+    logger.error(`Fatal startup error: ${message}`, stack);
+    console.error('Fatal startup error details:', err);
     process.exit(1);
 });
 //# sourceMappingURL=main.js.map
