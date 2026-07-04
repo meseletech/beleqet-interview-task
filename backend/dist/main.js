@@ -18,7 +18,15 @@ function normalizeProductionDatabaseUrl() {
         return;
     }
     const currentUrl = process.env.DATABASE_URL?.trim();
-    const fallbackKeys = ['DATABASE_INTERNAL_URL', 'POSTGRES_INTERNAL_URL', 'POSTGRES_URL'];
+    const fallbackKeys = [
+        'DATABASE_INTERNAL_URL',
+        'DATABASE_PRIVATE_URL',
+        'EXTERNAL_DATABASE_URL',
+        'POSTGRES_INTERNAL_URL',
+        'POSTGRES_URL',
+        'POSTGRESQL_URL',
+        'DATABASE_URL_EXTERNAL',
+    ];
     if (!currentUrl || isLocalDatabaseUrl(currentUrl)) {
         const replacementKey = fallbackKeys.find((key) => {
             const value = process.env[key]?.trim();
@@ -29,7 +37,7 @@ function normalizeProductionDatabaseUrl() {
             console.log(`[Bootstrap] Using ${replacementKey} as DATABASE_URL in production.`);
             return;
         }
-        console.error('[Bootstrap] DATABASE_URL is missing or points to localhost in production. ' +
+        throw new Error('DATABASE_URL is missing or points to localhost in production. ' +
             'Set a non-local PostgreSQL connection string in Render environment variables.');
     }
 }
@@ -85,8 +93,7 @@ bootstrap().catch((err) => {
     const logger = new common_1.Logger('Bootstrap');
     const message = err instanceof Error ? err.message : String(err);
     const stack = err instanceof Error ? err.stack : undefined;
-    logger.error(`Fatal startup error: ${message}`, stack);
-    console.error('Fatal startup error details:', err);
+    logger.error(message, stack);
     process.exit(1);
 });
 //# sourceMappingURL=main.js.map
