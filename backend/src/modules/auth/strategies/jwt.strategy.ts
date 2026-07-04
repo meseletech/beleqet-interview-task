@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
@@ -13,15 +13,29 @@ export interface JwtPayload {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(config: ConfigService) {
+  constructor(private readonly config: ConfigService) {
+    const secret = config.get<string>('JWT_ACCESS_SECRET');
+
+    if (!secret) {
+      throw new Error('JWT_ACCESS_SECRET is not defined in environment variables');
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: config.get<string>('JWT_ACCESS_SECRET')!,
+      secretOrKey: secret,
     });
   }
 
   validate(payload: JwtPayload) {
-    return { userId: payload.sub, email: payload.email, role: payload.role };
+    if (!payload?.sub) {
+      throw new UnauthorizedException('Invalid token payload');
+    }
+
+    return {
+      userId: payload.sub,
+      email: payload.email,
+      role: payload.role,
+    };
   }
 }
