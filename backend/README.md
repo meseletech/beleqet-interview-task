@@ -265,7 +265,7 @@ Wallet
 
 | Variable | Required | Notes |
 |---|---|---|
-| `DATABASE_URL` | ✅ | `postgresql://user:pass@host:5432/db` |
+| `DATABASE_URL` | ✅ | Must point to your cloud Postgres, not `localhost`; e.g. `postgresql://user:pass@host:5432/db` |
 | `REDIS_HOST` | ✅ | Default: `localhost` |
 | `REDIS_PORT` | ✅ | Default: `6379` |
 | `JWT_ACCESS_SECRET` | ✅ | `openssl rand -hex 64` |
