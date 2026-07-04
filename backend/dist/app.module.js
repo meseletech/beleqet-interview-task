@@ -36,6 +36,7 @@ exports.AppModule = AppModule = __decorate([
         imports: [
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
+                ignoreEnvFile: process.env.NODE_ENV === 'production',
                 envFilePath: ['.env.local', '.env'],
             }),
             throttler_1.ThrottlerModule.forRoot([

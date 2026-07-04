@@ -9,7 +9,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 function isLocalDatabaseUrl(url?: string): boolean {
   if (!url) return false;
-  return /@(?:localhost|127\.0\.0\.1)(?::\d+)?\//i.test(url);
+  return /@(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?\//i.test(url);
 }
 
 function normalizeProductionDatabaseUrl(): void {
@@ -43,7 +43,8 @@ function normalizeProductionDatabaseUrl(): void {
 
     throw new Error(
       'DATABASE_URL is missing or points to localhost in production. ' +
-      'Set a non-local PostgreSQL connection string in Render environment variables.',
+      'Set a non-local PostgreSQL connection string in Render environment variables ' +
+      '(for example DATABASE_URL or DATABASE_INTERNAL_URL from your cloud database).',
     );
   }
 }

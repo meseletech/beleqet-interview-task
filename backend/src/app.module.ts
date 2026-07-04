@@ -26,6 +26,7 @@ import { TelegramModule } from './modules/telegram/telegram.module';
     // ── Configuration (loads .env) ─────────────────────────────────────────
     ConfigModule.forRoot({
       isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'production',
       envFilePath: ['.env.local', '.env'],
     }),
 

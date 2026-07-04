@@ -11,7 +11,7 @@ const logging_interceptor_1 = require("./common/interceptors/logging.interceptor
 function isLocalDatabaseUrl(url) {
     if (!url)
         return false;
-    return /@(?:localhost|127\.0\.0\.1)(?::\d+)?\//i.test(url);
+    return /@(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?\//i.test(url);
 }
 function normalizeProductionDatabaseUrl() {
     if ((process.env.NODE_ENV ?? 'development') !== 'production') {
@@ -38,7 +38,8 @@ function normalizeProductionDatabaseUrl() {
             return;
         }
         throw new Error('DATABASE_URL is missing or points to localhost in production. ' +
-            'Set a non-local PostgreSQL connection string in Render environment variables.');
+            'Set a non-local PostgreSQL connection string in Render environment variables ' +
+            '(for example DATABASE_URL or DATABASE_INTERNAL_URL from your cloud database).');
     }
 }
 async function bootstrap() {
