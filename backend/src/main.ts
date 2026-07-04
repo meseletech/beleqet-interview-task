@@ -12,6 +12,32 @@ function isLocalDatabaseUrl(url?: string): boolean {
   return /@(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?\//i.test(url);
 }
 
+function normalizeRenderSsl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes('render.com') && !parsed.searchParams.has('sslmode')) {
+      parsed.searchParams.set('sslmode', 'require');
+      return parsed.toString();
+    }
+    return url;
+  } catch {
+    return url;
+  }
+}
+
+function logDatabaseTarget(url: string): void {
+  try {
+    const parsed = new URL(url);
+    // eslint-disable-next-line no-console
+    console.log(
+      `[Bootstrap] Database target host=${parsed.hostname} db=${parsed.pathname.replace('/', '')} user=${parsed.username}`,
+    );
+  } catch {
+    // eslint-disable-next-line no-console
+    console.log('[Bootstrap] Database target is set (unable to parse URL for diagnostics).');
+  }
+}
+
 function normalizeProductionDatabaseUrl(): void {
   if ((process.env.NODE_ENV ?? 'development') !== 'production') {
     return;
@@ -28,6 +54,12 @@ function normalizeProductionDatabaseUrl(): void {
     'DATABASE_URL_EXTERNAL',
   ];
 
+  if (currentUrl && !isLocalDatabaseUrl(currentUrl)) {
+    process.env.DATABASE_URL = normalizeRenderSsl(currentUrl);
+    logDatabaseTarget(process.env.DATABASE_URL);
+    return;
+  }
+
   if (!currentUrl || isLocalDatabaseUrl(currentUrl)) {
     const replacementKey = fallbackKeys.find((key) => {
       const value = process.env[key]?.trim();
@@ -35,9 +67,14 @@ function normalizeProductionDatabaseUrl(): void {
     });
 
     if (replacementKey) {
-      process.env.DATABASE_URL = process.env[replacementKey];
+      const replacementValue = process.env[replacementKey];
+      if (!replacementValue) {
+        throw new Error(`Resolved ${replacementKey} but value was empty.`);
+      }
+      process.env.DATABASE_URL = normalizeRenderSsl(replacementValue);
       // eslint-disable-next-line no-console
       console.log(`[Bootstrap] Using ${replacementKey} as DATABASE_URL in production.`);
+      logDatabaseTarget(process.env.DATABASE_URL);
       return;
     }
 
